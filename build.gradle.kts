@@ -11,7 +11,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(16))
     }
 }
 
@@ -20,13 +20,15 @@ repositories {
     mavenCentral()
     maven(url = "https://papermc.io/repo/repository/maven-public/")
     maven(url = "https://jitpack.io/")
+    maven(url = "https://maven.enginehub.org/repo/")
 }
 
 dependencies {
     compileOnly(kotlin("stdlib"))
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
-//    compileOnly("com.github.monun:invfx:2.1.0")
+    compileOnly("io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT")
+    compileOnly("com.sk89q.worldedit:worldedit-bukkit:7.2.0")
+    compileOnly("com.github.monun:invfx:2.1.0")
 
     implementation("com.github.monun:tap:3.7.1")
     implementation("com.github.monun:kommand:1.1.0")
