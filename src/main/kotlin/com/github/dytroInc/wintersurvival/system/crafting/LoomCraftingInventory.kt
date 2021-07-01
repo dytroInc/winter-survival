@@ -5,13 +5,13 @@ import com.github.dytroInc.wintersurvival.system.Items
 import com.github.monun.invfx.InvFX
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
-import org.apache.commons.lang.StringUtils.endsWith
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 class LoomCraftingInventory : CustomCraftingInventory() {
-    override fun getInv() = InvFX.scene(5, "옷 작업대") {
+    override fun getInv() = InvFX.scene(5, "가죽/털 작업대") {
         panel(0, 0, 9, 5) {
             listView(0, 0, 9, 4, false, getItemList().toList().sortedBy {
                 getNumber(it.first)
@@ -39,9 +39,20 @@ class LoomCraftingInventory : CustomCraftingInventory() {
     }
 
     override fun getItemList(): HashMap<ItemStack, ArrayList<ItemStack>> = hashMapOf(
+        ItemStack(Material.BUNDLE).apply {
+            itemMeta = itemMeta!!.apply {
+                displayName(Component.text("${ChatColor.YELLOW}가방"))
+            }
+        } to arrayListOf(
+            ItemStack(Material.LEATHER, 9)
+        ),
         Items.LEATHER_CHESTPLATE.clone() to arrayListOf(
             ItemStack(Material.LEATHER, 18),
             ItemStack(Material.WHITE_WOOL, 9)
+        ),
+        Items.LEATHER_LEGGINGS.clone() to arrayListOf(
+            ItemStack(Material.LEATHER, 16),
+            ItemStack(Material.WHITE_WOOL, 5)
         ),
         Items.LEATHER_BOOTS.clone() to arrayListOf(
             ItemStack(Material.LEATHER, 10),
@@ -50,10 +61,15 @@ class LoomCraftingInventory : CustomCraftingInventory() {
     )
 
     private fun getNumber(itemStack: ItemStack) = run {
+
         if(itemStack.type.name.contains("leather", true)) {
             return@run (2 + tool(itemStack))
         }
-        0
+        when(itemStack.type) {
+            Material.BUNDLE -> 1
+            else -> 0
+        }
+
     }
     private fun tool(itemStack: ItemStack) = when(itemStack.type.name.split("_")[1].lowercase()) {
         "helmet" -> 0

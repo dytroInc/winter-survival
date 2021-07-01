@@ -3,7 +3,6 @@ package com.github.dytroInc.wintersurvival.system
 import org.bukkit.World
 import org.bukkit.WorldCreator
 import org.bukkit.WorldType
-import org.bukkit.generator.ChunkGenerator
 
 class WinterWorldCreator : WorldCreator("winter") {
     override fun generator() = WinterWorldGen()

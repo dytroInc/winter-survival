@@ -13,7 +13,7 @@ class RockPopulator : BlockPopulator() {
 
     override fun populate(world: World, r: Random, chunk: Chunk) {
 
-        if(r.nextInt(5) < 2) {
+        if(r.nextInt(5) < 3) {
             val rocks = ArrayList<Location>()
 
 

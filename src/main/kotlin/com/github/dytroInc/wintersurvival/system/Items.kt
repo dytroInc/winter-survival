@@ -1,8 +1,6 @@
 package com.github.dytroInc.wintersurvival.system
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TextComponent
-import net.kyori.adventure.text.format.TextColor
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.inventory.ItemFlag
@@ -13,9 +11,10 @@ object Items {
         Material.COAL -> 3.5
         Material.CHARCOAL -> 3.0
         Material.SPRUCE_LOG -> 1.8
-        Material.STICK -> 0.8
+        Material.STICK -> 0.6
         else -> 0.0
     }
+
 
     fun ItemStack.foodCookedResult() = when(type) {
         Material.MUTTON -> ItemStack(Material.COOKED_MUTTON)
@@ -24,6 +23,7 @@ object Items {
     }
     fun ItemStack.goodsCookedResult() = when(type) {
         Material.RAW_IRON -> IRON
+        Material.RAW_COPPER -> COPPER
         else -> null
     }
 
@@ -45,6 +45,11 @@ object Items {
     val IRON = ItemStack(Material.IRON_INGOT).apply {
         itemMeta = itemMeta!!.apply {
             displayName(Component.text("${ChatColor.AQUA}가공된 철"))
+        }
+    }
+    val COPPER = ItemStack(Material.COPPER_INGOT).apply {
+        itemMeta = itemMeta!!.apply {
+            displayName(Component.text("${ChatColor.AQUA}가공된 구리"))
         }
     }
     val PLANKS = ItemStack(Material.SPRUCE_PLANKS).apply {
@@ -122,6 +127,12 @@ object Items {
             addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
         }
     }
+    val IRON_SHOVEL = ItemStack(Material.IRON_SHOVEL).apply {
+        itemMeta = itemMeta!!.apply {
+            displayName(Component.text("${ChatColor.YELLOW}철 삽"))
+            addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
+        }
+    }
 
     val LEATHER_BOOTS = ItemStack(Material.LEATHER_BOOTS).apply {
         itemMeta = itemMeta!!.apply {
@@ -134,7 +145,18 @@ object Items {
             )
         )
     }
-    val LEATHER_CHESTPLATE = ItemStack(Material.LEATHER_BOOTS).apply {
+    val LEATHER_LEGGINGS = ItemStack(Material.LEATHER_LEGGINGS).apply {
+        itemMeta = itemMeta!!.apply {
+            displayName(Component.text("${ChatColor.YELLOW}가죽 바지"))
+            addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
+        }
+        lore(
+            listOf(
+                Component.text("${ChatColor.BLUE}+15% 추위 감소")
+            )
+        )
+    }
+    val LEATHER_CHESTPLATE = ItemStack(Material.LEATHER_CHESTPLATE).apply {
         itemMeta = itemMeta!!.apply {
             displayName(Component.text("${ChatColor.YELLOW}가죽 잠바"))
             addItemFlags(ItemFlag.HIDE_ATTRIBUTES)
@@ -163,7 +185,12 @@ object Items {
     }
     val CLOTHES_WORKBENCH = ItemStack(Material.LOOM).apply {
         itemMeta = itemMeta!!.apply {
-            displayName(Component.text("${ChatColor.YELLOW}옷 작업대"))
+            displayName(Component.text("${ChatColor.YELLOW}가죽/털 작업대"))
+        }
+    }
+    val CUTTER = ItemStack(Material.STONECUTTER).apply {
+        itemMeta = itemMeta!!.apply {
+            displayName(Component.text("${ChatColor.YELLOW}절단기"))
         }
     }
 }

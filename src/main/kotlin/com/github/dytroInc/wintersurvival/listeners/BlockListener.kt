@@ -5,11 +5,9 @@ import com.github.dytroInc.wintersurvival.system.EnvelopedMail
 import com.github.dytroInc.wintersurvival.system.Items.foodCookedResult
 import com.github.dytroInc.wintersurvival.system.Items.fuel
 import com.github.dytroInc.wintersurvival.system.Items.goodsCookedResult
-import com.github.dytroInc.wintersurvival.system.Temperature
-import com.github.dytroInc.wintersurvival.system.crafting.CarpentryCraftingInventory
-import com.github.dytroInc.wintersurvival.system.crafting.LoomCraftingInventory
-import com.github.dytroInc.wintersurvival.system.crafting.ToolWorkbenchCraftingInventory
-import com.github.dytroInc.wintersurvival.system.crafting.WorkbenchCraftingInventory
+import com.github.dytroInc.wintersurvival.system.GameSystem
+import com.github.dytroInc.wintersurvival.system.Items
+import com.github.dytroInc.wintersurvival.system.crafting.*
 import com.github.monun.invfx.openWindow
 import net.kyori.adventure.text.Component
 import org.bukkit.*
@@ -21,6 +19,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.LeavesDecayEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.scheduler.BukkitRunnable
@@ -30,20 +29,28 @@ import java.text.DecimalFormat
 class BlockListener : Listener {
     @EventHandler
     fun breakBlock(e: BlockBreakEvent) {
-        if((e.block.type == Material.SNOW_BLOCK || e.block.type == Material.POWDER_SNOW) && e.player.gameMode != GameMode.CREATIVE) {
+
+        val tool = e.player.inventory.itemInMainHand
+        if((e.block.type == Material.SNOW_BLOCK || e.block.type == Material.POWDER_SNOW) && e.player.gameMode != GameMode.CREATIVE && !tool.type.name.contains("shovel", true)) {
             e.isCancelled = true
         }
-        Temperature.goods.filter {
+        if(e.block.type == Material.DEEPSLATE) e.isCancelled = true
+        GameSystem.goods.filter {
             it.sender == e.block.location
         }.forEach {
             it.sender.world.dropItemNaturally(it.sender.clone().add(0.0, 1.0, 0.0), it.itemStack)
         }
         if((e.block.type == Material.CAMPFIRE)) {
-            Temperature.campfire.remove(e.block.location)
+            GameSystem.campfire.remove(e.block.location)
         }
         if((e.block.type == Material.BLAST_FURNACE)) {
-            Temperature.furnace.remove(e.block.location)
+            GameSystem.furnace.remove(e.block.location)
         }
+    }
+
+    @EventHandler
+    fun decay(e: LeavesDecayEvent) {
+        e.isCancelled = true
     }
 
     @EventHandler
@@ -54,9 +61,9 @@ class BlockListener : Listener {
             e.isDropItems = false
             when(it.type) {
                 Material.SPRUCE_LEAVES -> {
-                    if(nextInt(3) == 0) {
+                    if(nextInt(5) == 0) {
                         drops.add(
-                            ItemStack(Material.SWEET_BERRIES, nextInt(1, 4)).apply {
+                            ItemStack(Material.SWEET_BERRIES, nextInt(1, 3)).apply {
                                 itemMeta = itemMeta!!.apply {
                                     displayName(Component.text(
                                         "${ChatColor.WHITE}산딸기"
@@ -65,6 +72,17 @@ class BlockListener : Listener {
                             }
                         )
                     }
+                }
+                Material.CAMPFIRE -> {
+                    drops.add(Items.STICK.clone().apply {
+                        amount = 3
+                    })
+                }
+                Material.BLAST_FURNACE -> {
+                    drops.add(Items.STICK.clone().apply {
+                        amount = 15
+                    })
+                    drops.add(ItemStack(Material.COBBLESTONE, 30))
                 }
                 else -> e.isDropItems = true
             }
@@ -79,10 +97,10 @@ class BlockListener : Listener {
     fun placeBlock(e: BlockPlaceEvent) {
 
         if(e.block.type == Material.CAMPFIRE) {
-            Temperature.campfire[e.block.location] = 5.0
+            GameSystem.campfire[e.block.location] = 5.0
         }
         if(e.block.type == Material.BLAST_FURNACE) {
-            Temperature.furnace[e.block.location] = 30.0
+            GameSystem.furnace[e.block.location] = 30.0
         }
 
     }
@@ -113,6 +131,10 @@ class BlockListener : Listener {
             Material.BEEHIVE ->  {
                 p.openWindow(CarpentryCraftingInventory().getInv())
             }
+            Material.STONECUTTER -> {
+                e.isCancelled = true
+                p.openWindow(CutterCraftingInventory().getInv())
+            }
             Material.SMITHING_TABLE -> {
                 e.isCancelled = true
                 p.openWindow(ToolWorkbenchCraftingInventory().getInv())
@@ -125,13 +147,13 @@ class BlockListener : Listener {
                 e.isCancelled = true
                 if(p.isSneaking) {
                     p.sendMessage("${ChatColor.GOLD}예상 연료 소모 시간: " +
-                            "${ChatColor.AQUA}${DecimalFormat("#.##").format(Temperature.campfire[b.location]?.div(0.2))}" +
+                            "${ChatColor.AQUA}${DecimalFormat("#.##").format(GameSystem.campfire[b.location]?.div(0.2))}" +
                             "${ChatColor.GOLD}초")
                 } else {
                     e.item?.let { item ->
                         if(item.fuel() > 0) {
 
-                            Temperature.campfire[b.location] = (Temperature.campfire[b.location]?: 5.0) + item.fuel()
+                            GameSystem.campfire[b.location] = (GameSystem.campfire[b.location]?: 5.0) + item.fuel()
                             item.subtract()
                             p.playSound(
                                 p.location,
@@ -141,7 +163,7 @@ class BlockListener : Listener {
                                 1f
                             )
                         } else if(item.foodCookedResult() != null) {
-                            Temperature.goods.add(EnvelopedMail(item.foodCookedResult()!!, 20 * 5, p.uniqueId, b.location, item.clone().apply {
+                            GameSystem.goods.add(EnvelopedMail(item.foodCookedResult()!!, 20 * 5, p.uniqueId, b.location, item.clone().apply {
                                 amount = 1
                             }))
                             item.subtract()
@@ -160,12 +182,12 @@ class BlockListener : Listener {
                 e.isCancelled = true
                 if(p.isSneaking) {
                     p.sendMessage("${ChatColor.GOLD}예상 연료 소모 시간: " +
-                            "${ChatColor.AQUA}${DecimalFormat("#.##").format(Temperature.furnace[b.location]?.div(0.2))}" +
+                            "${ChatColor.AQUA}${DecimalFormat("#.##").format(GameSystem.furnace[b.location]?.div(0.2))}" +
                             "${ChatColor.GOLD}초")
                 } else {
                     e.item?.let { item ->
                         if(item.fuel() > 0) {
-                            Temperature.furnace[b.location] = (Temperature.furnace[b.location]?: 35.0) + item.fuel()
+                            GameSystem.furnace[b.location] = (GameSystem.furnace[b.location]?: 35.0) + item.fuel()
                             item.subtract()
                             p.playSound(
                                 p.location,
@@ -175,7 +197,7 @@ class BlockListener : Listener {
                                 1f
                             )
                         } else if(item.foodCookedResult() != null) {
-                            Temperature.goods.add(EnvelopedMail(item.foodCookedResult()!!, 20 * 3, p.uniqueId, b.location, item.clone().apply {
+                            GameSystem.goods.add(EnvelopedMail(item.foodCookedResult()!!, 20 * 3, p.uniqueId, b.location, item.clone().apply {
                                 amount = 1
                             }))
                             item.subtract()
@@ -187,7 +209,7 @@ class BlockListener : Listener {
                                 1f
                             )
                         } else if(item.goodsCookedResult() != null) {
-                            Temperature.goods.add(EnvelopedMail(item.goodsCookedResult()!!, 20 * 4, p.uniqueId, b.location, item.clone().apply {
+                            GameSystem.goods.add(EnvelopedMail(item.goodsCookedResult()!!, 20 * 4, p.uniqueId, b.location, item.clone().apply {
                                 amount = 1
                             }))
                             item.subtract()

@@ -1,16 +1,16 @@
 package com.github.dytroInc.wintersurvival.system.crafting
 
 import com.github.dytroInc.wintersurvival.system.DefaultTranslation.getName
-import com.github.dytroInc.wintersurvival.system.Items
 import com.github.monun.invfx.InvFX
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import com.github.dytroInc.wintersurvival.system.Items
 
-class ToolWorkbenchCraftingInventory : CustomCraftingInventory() {
-    override fun getInv() = InvFX.scene(5, "도구 작업대") {
+class CutterCraftingInventory : CustomCraftingInventory() {
+    override fun getInv() = InvFX.scene(5, "절단기") {
         panel(0, 0, 9, 5) {
             listView(0, 0, 9, 4, false, getItemList().toList().sortedBy {
                 getNumber(it.first)
@@ -39,71 +39,50 @@ class ToolWorkbenchCraftingInventory : CustomCraftingInventory() {
 
     override fun getItemList(): HashMap<ItemStack, ArrayList<ItemStack>> = hashMapOf(
         Items.STICK.clone().apply {
-            amount = 3
+            amount = 8
         } to arrayListOf(
             ItemStack(Material.SPRUCE_LOG, 1)
         ),
-        Items.IRON_AXE to arrayListOf(
-            Items.STICK.clone().apply {
-                amount = 13
-            },
-            Items.COPPER.clone().apply {
-                amount = 3
-            },
+        ItemStack(Material.IRON_BARS, 3) to arrayListOf(
             Items.IRON.clone().apply {
-                amount = 7
+                amount = 6
             }
         ),
-        Items.IRON_PICK to arrayListOf(
+        ItemStack(Material.RAIL, 12) to arrayListOf(
+            Items.IRON.clone().apply {
+                amount = 10
+            },
             Items.STICK.clone().apply {
-                amount = 13
+                amount = 36
             },
             Items.COPPER.clone().apply {
-                amount = 3
-            },
-            Items.IRON.clone().apply {
-                amount = 7
+                amount = 24
             }
         ),
-        Items.IRON_SWORD to arrayListOf(
-            Items.STICK.clone().apply {
-                amount = 13
+        ItemStack(Material.MINECART) to arrayListOf(
+            Items.IRON.clone().apply {
+                amount = 12
+            }
+        ),
+        ItemStack(Material.HOPPER_MINECART) to arrayListOf(
+            Items.IRON.clone().apply {
+                amount = 14
             },
             Items.COPPER.clone().apply {
-                amount = 3
+                amount = 2
             },
-            Items.IRON.clone().apply {
-                amount = 7
+            ItemStack(Material.COBBLESTONE).apply {
+                amount = 30
             }
-        ),
-        Items.IRON_SHOVEL to arrayListOf(
-            Items.STICK.clone().apply {
-                amount = 13
-            },
-            Items.COPPER.clone().apply {
-                amount = 4
-            },
-            Items.IRON.clone().apply {
-                amount = 4
-            }
-        ),
+        )
     )
 
-    private fun getNumber(itemStack: ItemStack) = run {
-
-        if(itemStack.type.name.contains("iron", true)) {
-            return@run (2 + tool(itemStack))
-        }
-
-        0
+    private fun getNumber(itemStack: ItemStack) = when(itemStack.type) {
+        Material.STICK -> 1
+        Material.IRON_BARS -> 2
+        Material.RAIL -> 2
+        Material.MINECART -> 3
+        Material.HOPPER_MINECART -> 4
+        else -> 0
     }
-    private fun tool(itemStack: ItemStack) = when(itemStack.type.name.split("_")[1].lowercase()) {
-        "pickaxe" -> 0
-        "axe" -> 1
-        "sword" -> 2
-        "shovel" -> 3
-        else -> 4
-    }
-
-
 }

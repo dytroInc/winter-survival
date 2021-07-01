@@ -2,8 +2,12 @@ package com.github.dytroInc.wintersurvival.listeners
 
 import com.github.dytroInc.wintersurvival.plugin.WinterSurvival
 import com.github.dytroInc.wintersurvival.system.Items
-import com.github.dytroInc.wintersurvival.system.Temperature
+import com.github.dytroInc.wintersurvival.system.GameSystem
 import com.github.dytroInc.wintersurvival.system.crafting.*
+import com.github.dytroInc.wintersurvival.system.tribes.Tribe.Companion.hasAdvantage
+import com.github.dytroInc.wintersurvival.system.tribes.Tribe.Companion.hasDisadvantage
+import com.github.dytroInc.wintersurvival.system.tribes.TribeAdvantages
+import com.github.dytroInc.wintersurvival.system.tribes.TribeDisadvantages
 import com.github.dytroInc.wintersurvival.utils.BasicUtils.same
 import com.github.monun.invfx.openWindow
 import org.bukkit.*
@@ -15,6 +19,8 @@ import org.bukkit.event.entity.ItemSpawnEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerRespawnEvent
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 import kotlin.random.Random.Default.nextDouble
 
@@ -23,6 +29,7 @@ class WorldListener : Listener {
     fun onJoin(e: PlayerJoinEvent) {
         if(e.player.world.name != "winter") e.player.teleport(getWild())
         e.player.loadDefault()
+
     }
     @EventHandler
     fun onDeath(e: PlayerRespawnEvent) {
@@ -31,7 +38,15 @@ class WorldListener : Listener {
 
                 e.player.teleport(getWild())
                 e.player.loadDefault()
-                Temperature.temperature[e.player.uniqueId] = 100.0
+                GameSystem.temperature[e.player.uniqueId] = 100.0
+                if(e.player.hasDisadvantage(TribeDisadvantages.SLOWNESS)) {
+                    e.player.addPotionEffect(PotionEffect(PotionEffectType.SLOW, Int.MAX_VALUE, 1, false, false, false)) // 구속 2
+                } else if(e.player.hasDisadvantage(TribeDisadvantages.HUNGER)) {
+                    e.player.addPotionEffect(PotionEffect(PotionEffectType.HUNGER, Int.MAX_VALUE, 1, false, false, false)) // 구속 2
+                }
+                if(e.player.hasAdvantage(TribeAdvantages.SPEED)) {
+                    e.player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, Int.MAX_VALUE, 1, false, false, false)) // 구속 2
+                }
             }
         }.runTaskLater(WinterSurvival.instance, 1)
 
@@ -50,6 +65,39 @@ class WorldListener : Listener {
 
         if (item same (Items.BLANK)) {
             e.isCancelled = true
+        }
+        if(item.isSimilar(Items.CRAFT_MENU)) {
+            e.isCancelled = true
+        }
+        if(item.type == Material.STICK) {
+            e.entity.itemStack = Items.STICK.clone().apply {
+                amount = item.amount
+            }
+        }
+        if(item.type == Material.IRON_INGOT) {
+            e.entity.itemStack = Items.IRON.clone().apply {
+                amount = item.amount
+            }
+        }
+        if(item.type == Material.SPRUCE_PLANKS) {
+            e.entity.itemStack = Items.PLANKS.clone().apply {
+                amount = item.amount
+            }
+        }
+        if(item.type == Material.SPRUCE_SLAB) {
+            e.entity.itemStack = Items.SLABS.clone().apply {
+                amount = item.amount
+            }
+        }
+        if(item.type == Material.SPRUCE_STAIRS) {
+            e.entity.itemStack = Items.STAIRS.clone().apply {
+                amount = item.amount
+            }
+        }
+        if(item.type == Material.SPRUCE_DOOR) {
+            e.entity.itemStack = Items.DOOR.clone().apply {
+                amount = item.amount
+            }
         }
     }
 
@@ -73,11 +121,11 @@ class WorldListener : Listener {
         }
     }
     private fun Player.loadDefault() {
-        inventory.apply {
+        inventory.let {
             for(slot in 9..34) {
-                setItem(slot, Items.BLANK)
+                it.setItem(slot, Items.BLANK)
             }
-            setItem(35, Items.CRAFT_MENU)
+            it.setItem(35, Items.CRAFT_MENU)
 
         }
     }

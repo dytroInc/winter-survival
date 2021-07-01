@@ -8,8 +8,8 @@ import org.bukkit.block.Biome
 import org.bukkit.generator.BlockPopulator
 import org.bukkit.generator.ChunkGenerator
 import org.bukkit.util.noise.PerlinNoiseGenerator
-import org.bukkit.util.noise.PerlinOctaveGenerator
 import java.util.*
+import kotlin.random.Random.Default.nextInt
 
 class WinterWorldGen : ChunkGenerator() {
     companion object {
@@ -25,7 +25,7 @@ class WinterWorldGen : ChunkGenerator() {
             for(y in 0..(currentHeight - 2)) {
                 chunk.setBlock(x, y, z, Material.DEEPSLATE)
             }
-            val m = if(currentHeight <= 55) Material.POWDER_SNOW else Material.SNOW_BLOCK
+            val m = if(currentHeight <= 54 || nextInt(500) == 0) Material.POWDER_SNOW else Material.SNOW_BLOCK
             chunk.setBlock(x, currentHeight, z, m)
             chunk.setBlock(x, currentHeight - 1, z, m)
             chunk.setBlock(x, 0, z, Material.BEDROCK)
@@ -33,10 +33,11 @@ class WinterWorldGen : ChunkGenerator() {
             for(y in 0..256) {
                 world.setBiome(x, y, z, Biome.SNOWY_TUNDRA)
             }
-            */
             for(y in 45..150) {
                 world.setBiome(x, y, z, Biome.SNOWY_TUNDRA)
             }
+            */
+
 
         }
 
